@@ -18,3 +18,21 @@ The firmware in the 2732 EPROM consists of 7 demo "apps" selectable by using the
 - position 5 - flash the LEDs from right to left and then from left to right in a "Knight Rider" or "Cylon" type pattern
 - position 6 - flash the LEDs from right to left in a "chaser" type pattern
 - position 7 - display the position of the rotary switch through the serial port
+
+## 4004 SBC CPU and Memory
+The CPU and Memory section of the Single Board Computer consists of an Intel 4004 CPU, a 4201 Clock Generator, two 4002 RAM chips with output ports (for a total of 640 bits of RAM), a 4289 Standard Memory Interface which provides the interface to a 2732 4K EPROM for program memory.
+
+## 4004 SBC I/O
+The Input/Output section of the 4004 Single Board Computer consists of two 4 bit output ports and two 4 bit input ports. The two 4002 RAM chips provide the output ports. A 74LS244 octal buffer provides the two input ports.
+
+One of the output ports (address 0x40) is used to control the four LEDs. One bit of the second output port (address 0x00) is used to provide a bit-banged RS232 serial transmit output.
+
+One of the input ports (address 0x10) is used to read a four bit, sixteen position rotary switch. One bit of the second input port (address 0x00) is used for the RS232 serial receive input.
+
+The 4049 CMOS Inverters are used as buffers and level converters.
+
+## 4004 SBC Power Supply
+The 4004 single board computer's power supply shown below uses a Radio Shack transformer and a dual linear adjustable power supply module that I purchased on eBay to produce to +5VDC and -10VDC that the SBC requires. Connections between the power supply and SBC use common 5 pin DIN connectors.
+
+## 4004 SBC Firmware
+The 4004 SBC firmware was assembled with the AS Macro Assembler.
