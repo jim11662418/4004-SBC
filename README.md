@@ -46,5 +46,9 @@ The 4004 single board computer's power supply shown below uses a Radio Shack tra
   <img src="/images/4004%20SBC%20PS.png"/>
 </figure>
 
+<figure>
+  <img src="/images/POWER%20SUPPLY.jpg"/>
+</figure>
+
 ### 4004 SBC Firmware
 The 4004 SBC firmware was assembled with the AS Macro Assembler.
