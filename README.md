@@ -9,6 +9,10 @@ I built this Intel 4004 Single Board Computer a few years back to celebrate the 
 - 4 LEDs controlled by an output port on one of the 4002s
 - 16 position rotary switch for selection of program options
 - RS232 console serial port
+<figure>
+  <img src="/images/4004%20SBC.jpeg"/>
+  <figcaption>Analog Clock from Walmart</figcaption>
+</figure>
 
 The firmware in the 2732 EPROM consists of 7 demo "apps" selectable by using the on-board 16 position rotary switch (see the comments in the EPROM firmware):
 - position 1 - flash the red, amber and green LEDs to mimic the operation of a traffic signal
