@@ -37,7 +37,7 @@ One of the input ports (address 0x10) is used to read a four bit, sixteen positi
 
 The 4049 CMOS Inverters are used as buffers and level converters.
 <figure>
-  <img src="/images/4004%20SBC.jpg"/>
+  <img src="/images/4004%20SBC%20IO.png"/>
 </figure>
 
 ### 4004 SBC Power Supply
