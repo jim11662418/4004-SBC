@@ -25,7 +25,7 @@ The firmware in the 2732 EPROM consists of 7 demo "apps" selectable by using the
 ### 4004 SBC CPU and Memory
 The CPU and Memory section of the Single Board Computer consists of an Intel 4004 CPU, a 4201 Clock Generator, two 4002 RAM chips with output ports (for a total of 640 bits of RAM), a 4289 Standard Memory Interface which provides the interface to a 2732 4K EPROM for program memory.
 <figure>
-  <img src="/images/4004%20SBC.jpg"/>
+  <img src="/images/4004%20SBC%20CPU"/>
 </figure>
 
 ### 4004 SBC I/O
