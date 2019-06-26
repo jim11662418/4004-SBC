@@ -3,7 +3,7 @@
 I built this Intel 4004 Single Board Computer a few years back to celebrate the 40th anniversary of the Intel 4004 CPU using ICs that I purchased on eBay. This homebrew, wire-wrap single board computer features:
 - Intel 4004 CPU
 - Intel 4201 Clock Generator
-- Intel 4002 Static RAM (2X for a total of 640 bits of data memory)
+- Intel 4002 Static RAM (2X for a total of 640 *bits* of data memory)
 - Intel 4289 Standard Memory Interface
 - 2732 EPROM for program storage
 - 4 LEDs controlled by an output port on one of the 4002s
