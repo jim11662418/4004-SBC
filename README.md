@@ -12,6 +12,7 @@ I built this Intel 4004 Single Board Computer a few years back to celebrate the 
 <figure>
   <img src="/images/4004%20SBC.jpg"/>
 </figure>
+<p align="center">Home-brew Intel 4004 SBC<p align="center">
 
 The firmware in the 2732 EPROM consists of 7 demo "apps" selectable by using the on-board 16 position rotary switch (see the comments in the EPROM firmware):
 - position 1 - flash the red, amber and green LEDs to mimic the operation of a traffic signal
@@ -27,6 +28,7 @@ The CPU and Memory section of the Single Board Computer consists of an Intel 400
 <figure>
   <img src="/images/4004%20SBC%20CPU.png"/>
 </figure>
+<p align="center">4004 SBC CPU and Memory<p align="center">
 
 ### 4004 SBC I/O
 The Input/Output section of the 4004 Single Board Computer consists of two 4 bit output ports and two 4 bit input ports. The two 4002 RAM chips provide the output ports. A 74LS244 octal buffer provides the two input ports.
@@ -39,6 +41,7 @@ The 4049 CMOS Inverters are used as buffers and level converters.
 <figure>
   <img src="/images/4004%20SBC%20IO.png"/>
 </figure>
+<p align="center">4004 SBC I/O<p align="center">
 
 ### 4004 SBC Power Supply
 The 4004 single board computer's power supply shown below uses a Radio Shack transformer and a dual linear adjustable power supply module that I purchased on eBay to produce to +5VDC and -10VDC that the SBC requires. Connections between the power supply and SBC use common 5 pin DIN connectors.
@@ -49,6 +52,7 @@ The 4004 single board computer's power supply shown below uses a Radio Shack tra
 <figure>
   <img src="/images/Power%20Supply.jpg"/>
 </figure>
+<p align="center">4004 SBC Power Supply<p align="center">
 
 ### 4004 SBC Firmware
 The [4004 SBC firmware](4004%20SBC%20Source.asm) was assembled with the [Macro Assembler AS](http://john.ccac.rwth-aachen.de:8000/as/).
