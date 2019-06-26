@@ -47,7 +47,7 @@ The 4004 single board computer's power supply shown below uses a Radio Shack tra
 </figure>
 
 <figure>
-  <img src="/images/POWER%20SUPPLY.jpg"/>
+  <img src="/images/Power%20Supply.jpg"/>
 </figure>
 
 ### 4004 SBC Firmware
