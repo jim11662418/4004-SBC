@@ -43,7 +43,7 @@ The 4049 CMOS Inverters are used as buffers and level converters.
 ### 4004 SBC Power Supply
 The 4004 single board computer's power supply shown below uses a Radio Shack transformer and a dual linear adjustable power supply module that I purchased on eBay to produce to +5VDC and -10VDC that the SBC requires. Connections between the power supply and SBC use common 5 pin DIN connectors.
 <figure>
-  <img src="/images/4004%20SBC.jpg"/>
+  <img src="/images/4004%20SBC%20PS.png"/>
 </figure>
 
 ### 4004 SBC Firmware
