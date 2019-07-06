@@ -249,35 +249,35 @@ xor1:   	bbl 0		        ;return to main program
 
 ;--------------------------------------------------------------------------------------------------            
 ; The following delays assume a 5.068 MHz crystal/7 = 724 KHz clock which yields 1.38121 microsecond clock period.
-; Each instruction cycle is 8 clock periods so: 1.38121 microseconds * 8 = 11.04968 microseconds/instruction cycle.
+; Each instruction cycle is 8 clock periods so: 1.38121 microseconds * 8 = 11.04972 microseconds/instruction cycle.
 ; Uses P6 and P7 (R12, R13, R14, R15).
 ;--------------------------------------------------------------------------------------------------
-;90501 cycles * 11.04968 microseconds/cycle = 1,000,007 microseconds    
+;90501 cycles * 11.04972 microseconds/cycle = 1,000,011 microseconds    
 onesecond:  fim P6,0E4H         ;R12 = 14, R13 =  4
             fim P7,0A5H         ;R14 = 10, R15 =  5
             jun delayloop
 
-;45251 cycles * 11.04968 microseconds/cycle = 500,009 microseconds    
+;45251 cycles * 11.04972 microseconds/cycle = 500,011 microseconds    
 halfsecond: fim P6,092H         ;R12 =  9, R13 =  2
             fim P7,0DAH         ;R14 = 13, R15 = 10
             jun delayloop
 
-;22625 cycles * 11.04968 microseconds/cycle = 249,999 microseconds    
+;22625 cycles * 11.04972 microseconds/cycle = 250,000 microseconds    
 quartersec: fim P6,079H         ;R12 = 7, R13 =  9
             fim P7,06DH         ;R14 = 6, R15 =  13
             jun delayloop
             
-;9051 cycles * 11.04968 microseconds/cycle = 100,011 microseconds    
+;9051 cycles * 11.04972 microseconds/cycle = 100,011 microseconds    
 hundredmsec:fim P6,027H         ;R12 =  2, R13 =   7
             fim P7,0FEH         ;R14 = 15, R15 =  14
             jun delayloop
             
-;905 cycles * 11.04968 microseconds/cycle = 10,000 microseconds    
+;905 cycles * 11.04972 microseconds/cycle = 10,000 microseconds    
 tenmsec:    fim P6,0D5H         ;R12 = 13, R13 =  5
             fim P7,0EFH         ;R14 = 14, R15 = 15
             jun delayloop
 
-;91 cycles * 11.04968 microseconds/cycle = 1,006 microseconds    
+;91 cycles * 11.04972 microseconds/cycle = 1,005 microseconds    
 onemsec:    fim P6,0ADH         ;R12 = 10, R13 = 13
             fim P7,0FFH         ;R13 = 15, R15 = 15
             
@@ -285,7 +285,7 @@ delayloop:  isz R12,delayloop
             isz R13,delayloop
             isz R14,delayloop
             isz R15,delayloop
-            bbl 0      
+            bbl 0       
             
 ;--------------------------------------------------------------------------------------------------            
 ;send the character in P1 (R2 and R3) to the serial port
