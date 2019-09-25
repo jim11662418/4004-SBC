@@ -5,21 +5,13 @@ I built this Intel 4004 Single Board Computer a few years back to celebrate the 
 - Intel 4201 Clock Generator
 - Intel 4002 Static RAM (2X for a total of 640 *bits* of data memory)
 - Intel 4289 Standard Memory Interface
+- Intel 4265 General Purpose I/O
 - 2732 EPROM for program storage
 - 4 LEDs controlled by an output port on one of the 4002s
 - 16 position rotary switch for selection of program options
 - RS232 console serial port
 <p align="center"><img src="/images/4004%20SBC.jpg"/>
 <p align="center">Home-brew Intel 4004 SBC</p><br>
-
-The firmware in the 2732 EPROM consists of 7 demo "apps" selectable by using the on-board 16 position rotary switch (see the comments in the EPROM firmware):
-- position 1 - flash the red, amber and green LEDs to mimic the operation of a traffic signal
-- position 2 - 16 digit addition demo from the "MCS-4 Micro Computer Set User's Manual"
-- position 3 - echo characters received through the serial port
-- position 4 - turn on the red, amber, green and blue LEDs to match the position of the rotary switch
-- position 5 - flash the LEDs from right to left and then from left to right in a "Knight Rider" or "Cylon" type pattern
-- position 6 - flash the LEDs from right to left in a "chaser" type pattern
-- position 7 - display the position of the rotary switch through the serial port
 
 ### 4004 SBC CPU and Memory
 The CPU and Memory section of the Single Board Computer consists of an Intel 4004 CPU, a 4201 Clock Generator, two 4002 RAM chips with output ports (for a total of 640 bits of RAM), a 4289 Standard Memory Interface which provides the interface to a 2732 4K EPROM for program memory.
