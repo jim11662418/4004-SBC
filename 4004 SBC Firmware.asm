@@ -51,12 +51,12 @@ GPIOMODE6   equ 0110B   ;       I   I   O   O
 GPIOMODE7   equ 0111B   ;       I   I   I   O
 
             org 0000H
-            
+
 ;--------------------------------------------------------------------------------------------------
 ; Power-on-reset Entry
 ;--------------------------------------------------------------------------------------------------
 reset:      nop
-            jms ledsoff          ; turn off all four leds
+            jms ledsoff             ; turn off all four leds
 
             ldm 0001B
             fim P0,SERIALPORT
@@ -69,74 +69,79 @@ reset1:     isz R12,reset1
             isz R13,reset1
             isz R14,reset1
             isz R15,reset1
-            
+
             fim P0,GPIO             ; address of the 4265 GPIO device
             src P0
             ldm GPIOMODE0           ; from the table above
             wmp                     ; program the 4265 for mode 0 (all four ports are inputs)
 
-            jms banner              ; print the announcement
-reset2      jms ledsoff            
+            jms banner              ; print "Intel 4004 SBC"
+reset2:     jms ledsoff             ; all LEDs off
             jms menu                ; print the menu
-reset3:     jms getchar             ; wait for a character from serial input, echo it, character returned in P1
+reset3:     jms getchar             ; wait for a character from serial input, echo it, the character is returned in P1
 
-testfor1    fim P3,'1'
-            jms compare             ; compare the character in P1 to "1" in P3
-            jcn nz,testfor2         ; jump to there is no match
-            jun led1demo
+testfor0:   fim P3,'0'
+            jms compare             ; is the character in P1 '0'?
+            jcn nz,testfor1         ; jump if no match
+            jun reset2              ; no menu item assigned to '0' yet
+
+testfor1:   fim P3,'1'
+            jms compare             ; is is the character in P1 '1'?
+            jcn nz,testfor2         ; jump if no match
+            jun led1demo            ; '1' selects LED demo 1
 
 testfor2:   fim P3,'2'
-            jms compare
-            jcn nz,testfor3
-            jun led2demo
+            jms compare             ; is is the character in P1 '2'?
+            jcn nz,testfor3         ; jump if no match
+            jun led2demo            ; '2' selects LED demo 2
 
 testfor3:   fim P3,'3'
-            jms compare
-            jcn nz,testfor4
-            jun adddemo
+            jms compare             ; is is the character in P1 '3'?
+            jcn nz,testfor4         ; jump if no match
+            jun adddemo             ; '3' selects decimal addition demo
 
 testfor4:   fim P3,'4'
-            jms compare
-            jcn nz,testfor5
-            jun subdemo
+            jms compare             ; is is the character in P1 '4'?
+            jcn nz,testfor5         ; jump if no match
+            jun subdemo             ; '4' selects decimal subtraction demo
 
 testfor5:   fim P3,'5'
-            jms compare
-            jcn nz,testfor6
-            jun multdemo
+            jms compare             ; is is the character in P1 '5'?
+            jcn nz,testfor6         ; jump if no match
+            jun multdemo            ; '5' selects decimal multiplication demo
 
 testfor6:   fim P3,'6'
-            jms compare
-            jcn nz,testfor7
-            jun divdemo
+            jms compare             ; is is the character in P1 '6'?
+            jcn nz,testfor7         ; jump if no match
+            jun divdemo             ; '6' selects decimal division demo
 
 testfor7:   fim P3,'7'
-            jms compare
-            jcn nz,testfor8
-            jun serialdemo
+            jms compare             ; is is the character in P1 '7'?
+            jcn nz,testfor8         ; jump if no match
+            jun serialdemo          ; '7' selects serial communications demo
 
 testfor8:   fim P3,'8'
-            jms compare
-            jcn nz,testfor9
-            jun game
+            jms compare             ; is is the character in P1 '8'?
+            jcn nz,testfor9         ; jump if no match
+            jun game                ; '8' selects number guessing game
 
 testfor9:   fim P3,'9'
-            jms compare
-            jcn nz,nomatch
-            jun switchdemo
+            jms compare             ; is is the character in P1 '9'?
+            jcn nz,nomatch          ; jump if no match
+            jun switchdemo          ; '9' selects rotary switch demo
 
-nomatch:    ld R9                   ; "state" in R9
-            jcn z,state0            ; jump if state "0"
+nomatch:    ld R9                   ; "state" is kept in R9
+            jcn z,state0            ; jump if state is '0'
 
             ldm 1
             clc
-            sub R9
-            jcn z,state1            ; jump if state "1"
+            sub R9                  ; compare "state" in R9 to '1' by subtraction
+            jcn z,state1            ; jump if state is '1'
 
             ldm 2
             clc
-            sub R9
-            jcn z,state2            ; jump if state "2"
+            sub R9                  ; compare "state" in R9 to '2' by subtraction
+            jcn z,state2            ; jump if state is '2'
 
             ldm 0                   ; else reset "state" back to zero
             xch R9
@@ -144,7 +149,7 @@ nomatch:    ld R9                   ; "state" in R9
 
 state0:     fim P3,ESCAPE           ; state=0, we're waiting for the 1st Escape
             jms compare             ; compare the character in P1 to the "ESCAPE" in P3
-            jcn nz,reset2           ; if noy ESCAPE, display the menu options, go back for the next character
+            jcn nz,reset2           ; if not ESCAPE, display the menu options, go back for the next character
 
             ldm 1                   ; the 1st Escape has been received
             xch R9                  ; advance the state from "0" to "1"
@@ -171,8 +176,8 @@ state2:     ldm 0                   ; state=2, the 2nd Escape has been received,
             jms builtby             ; display the "built by" message
             jun reset2              ; display the menu options, go back for the next character
 
-;--------------------------------------------------------------------------------------------------            
-; turn off all four LEDs            
+;--------------------------------------------------------------------------------------------------
+; turn off all four LEDs
 ;--------------------------------------------------------------------------------------------------
 ledsoff:    fim P0,LEDPORT
             src P0
@@ -181,16 +186,16 @@ ledsoff:    fim P0,LEDPORT
             bbl 0
 
 ;--------------------------------------------------------------------------------------------------
-; Compare the contents of P1 (R2,R3) with the contents of P3 (R6,R7). Returns with accumulator = 0 
+; Compare the contents of P1 (R2,R3) with the contents of P3 (R6,R7). Returns with accumulator = 0
 ; if P1 = P3. Returns with accumulator = 1 if P1 < P3. Returns with accumulator = 2 if P1 > P3.
 ; Overwrites the contents of P3. Adapted from code in the "MCS-4 Micro Computer Set Users Manual" on page 166:
 ;--------------------------------------------------------------------------------------------------
-compare:    clc                     ; clear carry before "subtract with borrow" instruction   
+compare:    clc                     ; clear carry before "subtract with borrow" instruction
             xch R6                  ; contents of R7 (high nibble of P3) into accumulator
             sub R2                  ; compare the high nibble of P1 (R2) t0 the high nibble of P3 (R6) by subtraction
             jcn cn,greater          ; no carry means that R2 > R6
             jcn zn,lesser           ; jump if the accumulator is not zero (low nibbles not equal)
-            clc                     ; clear carry before "subtract with borrow" instruction   
+            clc                     ; clear carry before "subtract with borrow" instruction
             xch R7                  ; contents of R6 (low nibble of P3) into accumulator
             sub R3                  ; compare the low nibble of P1 (R3) to the low nibble of P3 (R7) by subtraction
             jcn cn,greater          ; no carry means R3 > R7
@@ -206,7 +211,7 @@ newline:    fim P1,CR
             jms printchar
             fim P1,LF
             jun printchar
-            
+
 ;-----------------------------------------------------------------------------------------
 ; This function is used by all the text string printing functions. If the character in P1 is zero indicating
 ; the end of the string, returns with accumualtor = 0. Otherwise prints the character and increments
@@ -225,24 +230,24 @@ txtout1:    jms printchar           ; print the character in P1
             inc R0                  ; else, increment most significant nibble of the pointer
 txtout2:    bbl 1                   ; not end of text, branch back with accumulator = 1
 
-;--------------------------------------------------------------------------------------------------            
-; 907 cycles * 11.05 microseconds/cycle = 10,022 microseconds    
 ;--------------------------------------------------------------------------------------------------
-tenmsec:    fim P6,067H 
+; 907 cycles * 11.05 microseconds/cycle = 10,022 microseconds
+;--------------------------------------------------------------------------------------------------
+tenmsec:    fim P6,067H
             fim P7,0EFH
 delayloop:  isz R12,delayloop
-            jcn tn,delayexit        ; early exit if start bit is detected 
+            jcn tn,delayexit        ; early exit if start bit is detected
             isz R13,delayloop
-            jcn tn,delayexit        ; early exit if start bit is detected             
+            jcn tn,delayexit        ; early exit if start bit is detected
             isz R14,delayloop
-            jcn tn,delayexit        ; early exit if start bit is detected             
+            jcn tn,delayexit        ; early exit if start bit is detected
             isz R15,delayloop
-            jcn tn,delayexit        ; early exit if start bit is detected             
-            bbl 0  
-delayexit:  bbl 1            
+            jcn tn,delayexit        ; early exit if start bit is detected
+            bbl 0                   ; return with 0 if the start bit was not detected
+delayexit:  bbl 1                   ; return with 1 if the start bit was detected
 
             org 0100H
-            
+
 ;--------------------------------------------------------------------------------------------------
 ; Send the character in P1 (R2,R3) to the serial port (the least significant bit of port 0).
 ; In addition to P1 (R2,R3) also uses P6 (R12,R13) and P7 (R14,R15).
@@ -275,25 +280,25 @@ printchar2: ld R2                   ; get the most significant nibble of the cha
             tcc                     ; transfer the carry bit to the least significant bit of the accumulator
             wmp                     ; write the least significant bit of the accumulator to the serial output port
             fim P7,087H             ; 292 cycles
-printchar3: isz R14,printchar3      
+printchar3: isz R14,printchar3
             isz R15,printchar3
             isz R12,printchar2      ; do it for all 8 bits in R2,R3
             bbl 0
-  
+
 ;-----------------------------------------------------------------------------------------
 ; Wait for a character from the serial input port (TEST input on the 4004 CPU).
-; NOTE: the serial input line is inverted by hardware before it gets to the TEST input; 
+; NOTE: the serial input line is inverted by hardware before it gets to the TEST input;
 ; i.e. TEST=0 when the serial line is high and TEST=1 when the serial line is low,
-; therefore the sense of the bit needs to be inverted in software. 
+; therefore the sense of the bit needs to be inverted in software.
 ; Echo the received character to the serial output port (bit 0 of port 0).
-; Flash the LED on bit 0 of the 2nd 4002 about 3 times per second while waiting for 
+; Flash the LED on bit 0 of the 2nd 4002 about 3 times per second while waiting for
 ; a character. Returns the 7 bit received character in P1 (R2,R3).
 ; In addition to P1, also uses P6 (R12,R13) and P7 (R14,R15).
 ; (1/(5068000 MHz/7))*8 clocks/cycle = 11.05 microseconds/cycle
 ; for 300 bps: 1000000 microseconds / 300 bits/second / 11.05 microseconds/cycle = 302 cycles/bit
-;-----------------------------------------------------------------------------------------  
+;-----------------------------------------------------------------------------------------
 getchar:    ldm 8
-            xch R12                 ; R12 holds the number of bits to receive (7 data bits and 1 stop bit); 
+            xch R12                 ; R12 holds the number of bits to receive (7 data bits and 1 stop bit);
             fim P7,LEDPORT
             src P7
             ldm 0
@@ -314,23 +319,23 @@ getchar3:   isz R2,getchar3
             wmp                     ; toggle the LED conneted to bit zero of RAM chip 1
             jun getchar2            ; go back and do it again until the start bit is detected
 
-; the start bit has been detected...            
+; the start bit has been detected. wait 1/2 bit time...
 getchar4:   fim P7,0EBH             ; 144 cycles delay
 getchar5:   isz R14,getchar5
-            isz R15,getchar5        
+            isz R15,getchar5
             fim P7,SERIALPORT
             src P7                  ; define the serial port for I/O writes
             ldm 0                   ; start bit is low
             wmp                     ; echo the start bit to SERIALPORT
-            fim P1,0BBH             ; 150 cycles delay
+            fim P1,0BBH             ; 150 cycles delay (1/2 bit time)
 getchar6:   isz R2,getchar6
             isz R3,getchar6
             nop                     ; added to tweak timing
 
 ; loop here until all seven bits plus stop bit have been received (302 cycles/bit)
-getchar7:   fim P7,0DBH             ; 146 cycles delay
+getchar7:   fim P7,0DBH             ; 146 cycles delay (1/2 bit time)
 getchar8:   isz R14,getchar8
-            isz R15,getchar8        
+            isz R15,getchar8
             ldm 1                   ; "0" at the TEST input will be inverted to "1"
             jcn tn,getchar8a        ; jump if TEST input is 1
             jun getchar8b           ; skip the next two instructions since the TEST input is 0
@@ -346,7 +351,7 @@ getchar8b:  wmp                     ; echo the inverted bit back to the serial o
             xch R3                  ; extend register pair to make 8 bits
             fim P7,00CH             ; 138 cycles delay
 getchar9:   isz R14,getchar9
-            isz R15,getchar9        
+            isz R15,getchar9
             nop                     ; added to tweak timing
             nop
             nop
@@ -359,7 +364,7 @@ getchar9:   isz R14,getchar9
             rar                     ; shift the cleared carry bit back into the most significant bit of the most significant nibble
             xch R2                  ; save it back into R2
             bbl 0                   ; return to caller
-            
+
 ;-------------------------------------------------------------------------------
 ; Get a multi-digit integer from the serial port. Control C cancels.
 ; Upon entry, P2 points to RAM register for the number and R13 specifies
@@ -382,11 +387,11 @@ getnumber2: ldm 0DH
 ; Move digits in RAM 0EH-00H to the next higher address 0FH-01H.
 ; The digit at 0EH is moved to 0FH, the digit at 0DH is moved to 0EH, the digit at 0CH is moved to 0DH, and so on.
 ; Moving the digits makes room for the new digit from the serial port which is contained in P1 to be stored at 00H
-; at the least significant digit. P3 (R6,R7) is used as a pointer to the source for the move. 
+; at the least significant digit. P3 (R6,R7) is used as a pointer to the source for the move.
 ; P4 (R8,R9) is used as a pointer to the destination.
 getnumber3: ld R4                   ; get the most significant digit of the destination address from P2
             xch R6                  ; make it the most significant digit of the source address in P3
-            ld R6   
+            ld R6
             xch R8                  ; make it the most significant digit of the destiation address in P4
             ldm 0EH
             xch R7                  ; make the least significant digit of source address in P3 0EH
@@ -411,11 +416,11 @@ getnumber4: src P3                  ; source address
             wrm                     ; save the least significant nibble of the new digit (the binary value for the number) in RAM
             isz R13,getnumber       ; go back for the next digit (16 times thru the loop for 16 digits)
             bbl 0
-            
+
 ;-------------------------------------------------------------------------------
-; Print the contents of RAM register pointed to by P3 and a 16 digit number. R11 
+; Print the contents of RAM register pointed to by P3 and a 16 digit number. R11
 ; serves as a leading zero flag (1 means skip leading zeros). The digits are stored
-; in RAM from right to left i.e. the most significant digit is at location 0FH, 
+; in RAM from right to left i.e. the most significant digit is at location 0FH,
 ; therefore it's the first digit printed. The least significant digit is at location
 ; 00H, so it's the last digit printed.
 ;-------------------------------------------------------------------------------
@@ -429,7 +434,7 @@ prndigits1: src P3
             ld R7
             jcn zn,prndigits2       ; jump if this is not the last digit
             ldm 0
-            xch R11                 ; since this is the last digit, clear the leading zero flag    
+            xch R11                 ; since this is the last digit, clear the leading zero flag
 prndigits2: ld R11                  ; get the leading zero flag
             rar                     ; rotate the flag into carry
             rdm                     ; read the digit to be printed
@@ -448,7 +453,7 @@ prndigits4: ld  R7                  ; least significant nibble of the pointer to
             xch R7
             isz R10,prndigits1      ; loop 16 times (print all 16 digits)
             bbl 0                   ; finished with all 16 digits
-            
+
 ;-------------------------------------------------------------------------------
 ; Clear RAM subroutine from page 80 of the "MCS-4 Micro Computer Set Users Manual" Feb.73.
 ; P2 points to the RAM register to be cleared (zeroed).
@@ -461,15 +466,15 @@ clear:      ldm 0
             inc R5                  ; next character
             isz R1,clear            ; 16 times (zero all 16 nibbles)
             bbl 0
-  
+
             org 0200H
-            
+
 ;-------------------------------------------------------------------------------
-; Decimal addition demo. P1 points to the first integer stored in RAM register 10H 
-; (least significant digit at 10H, most significant digit at 1FH). P2 points to the 
+; Decimal addition demo. P1 points to the first integer stored in RAM register 10H
+; (least significant digit at 10H, most significant digit at 1FH). P2 points to the
 ; second integer stored in RAM register 20H (least significant digit at 20H, most
-; significant digit at 2FH). The 16 digit sum replaces the first integer in RAM 
-; register 10H (least significant digit at 10H, most significant digit at 1FH). 
+; significant digit at 2FH). The 16 digit sum replaces the first integer in RAM
+; register 10H (least significant digit at 10H, most significant digit at 1FH).
 ; Adapted from the code in "MCS-4 Micro Computer Set Users Manual, Feb. 73" page 77.
 ;--------------------------------------------------------------------------------
 adddemo:    jms addinstr
@@ -521,8 +526,8 @@ addition2:  bbl 0                   ; no overflow
 
 ;-------------------------------------------------------------------------------
 ; Decimal subtraction demo.
-; P1 points to the minuend stored in RAM register 10H (least significant digit at 10H, most 
-; significant digit at 1FH). P2 points to the subtrahend is stored in RAM register 20H (least 
+; P1 points to the minuend stored in RAM register 10H (least significant digit at 10H, most
+; significant digit at 1FH). P2 points to the subtrahend is stored in RAM register 20H (least
 ; significant digit at 20H, most significant digit at 2FH) The difference replaces
 ; the minuend in RAM register 10H (least significant digit at 10H, most significant digit at 1FH)
 ; Adapted from code in "MCS-4 Micro Computer Set Users Manual, Feb. 73" page 4-23.
@@ -552,7 +557,7 @@ subdemo1:   fim P2,10H              ; P2 points the memory register where the mi
             fim P2,20H              ; P2 points to the 16 digit subtrahend (number to be subtracted from another)
             jms subtract            ; subtract subtrahend from minuend
             jcn z,subdemo3          ; zero means no overflow, the difference is a positive number
-            
+
 ; the difference is a negative number, convert from 10's complement.
             fim P2,20H
             jms clrram              ; zero RAM 20H-2FH
@@ -565,25 +570,25 @@ subdemo1:   fim P2,10H              ; P2 points the memory register where the mi
 
 ; the difference is a positive number
 subdemo3:   fim P3,10H              ; P3 points to the result in RAM at 10H-1FH
-            fim P1,' '              ; space            
+            fim P1,' '              ; space
 subdemo4:   jms printchar           ; print a space
             jms prndigits           ; print the 16 digits of the difference
             jun subdemo1            ; go back for another pair of numbers
-            
+
 ;-------------------------------------------------------------------------------
 ; Decimal multiplication demo.
-; P1 points to the multiplicand stored in RAM register 10H, characters 05H 
+; P1 points to the multiplicand stored in RAM register 10H, characters 05H
 ; through 0CH where the digit at location 05H is the least significant digit
-; and the digit at location 0CH is the most significant digit. P2 points to 
+; and the digit at location 0CH is the most significant digit. P2 points to
 ; the multiplier stored ins RAM register 10H, characters 04H through 0BH: where
 ; the digit at location 04H is the least significant digit and the digit
-; at location 0BH is the most significant digit. P3 points to the product 
-; stored in RAM register 00H, characters 00H through 0FH: where the digit 
-; at location 00H is the least significant digit and the digit at location 
+; at location 0BH is the most significant digit. P3 points to the product
+; stored in RAM register 00H, characters 00H through 0FH: where the digit
+; at location 00H is the least significant digit and the digit at location
 ; 0FH is the most significant digit.
 ; The actual multiplication is done by the "MLRT" routine taken from:
 ; "A Microcomputer Solution to Maneuvering Board Problems" by Kenneth Harper Kerns, June 1973
-; Naval Postgraduate School Monterey, California. 
+; Naval Postgraduate School Monterey, California.
 ;--------------------------------------------------------------------------------
 multdemo:   jms multinstr
 multdemo1:  fim P2,10H              ; P2 points the memory register where the multiplicand is stored (10H-1FH)
@@ -593,42 +598,42 @@ multdemo1:  fim P2,10H              ; P2 points the memory register where the mu
 
             jms newline             ; position carriage to beginning of next line
             jms newline
-            
+
             jms firstnum            ; prompt for the multiplicand
             fim P2,15H              ; destination address for multiplicand (15H)
             ldm 16-8                ; up to 8 digits
             xch R13                 ; R13 is the digit counter
             jms getnumber           ; get the multiplicand (8 digits max) into RAM at 15H-1CH
             jms newline
-            
-            
+
+
             jms secondnum           ; prompt for the multiplier
             fim P2,24H              ; destination address for multiplier (24H)
             ldm 16-8                ; up to 8 digits
             xch R13                 ; R13 is the digit counter
             jms getnumber           ; get the multiplier (8 digits max) into RAM at 24H-2BH
             jms newline
-            
+
             fim P1,10H              ; multiplicand
             fim P2,20H              ; multiplier
-            fim P3,00H              ; product goes here            
+            fim P3,00H              ; product goes here
             jms MLRT                ; multi-digit multiplication routine
-            jms product             ; print "Product: "            
+            jms product             ; print "Product: "
             fim P3,00H              ; P3 points to the product at RAM address 00H-0FH
             jms prndigits           ; print the 16 digits of the product
-            
+
             jun multdemo1           ; go back for another pair of numbers
-            
+
 ;-------------------------------------------------------------------------------
 ; Decimal division demo.
 ; P1 points to the dividend in RAM register 00H, characters 00H through 06H (least significant digit at
-; location 00H, most significant digit at location 06H). P3 points to the divisor in RAM register 20H, 
-; characters 00H through 07H (least significant digit at location 00H, most significant digit at location 07H). 
+; location 00H, most significant digit at location 06H). P3 points to the divisor in RAM register 20H,
+; characters 00H through 07H (least significant digit at location 00H, most significant digit at location 07H).
 ; P4 points to the quotient in RAM register 30H (least significant digit at 30H, most significant digit at 3FH).
 ; P2 points to the remainder in RAM register 10H (least significant digit at 10H, most significant digit at 1FH).
 ; The actual division is done by the "DVRT" routine taken from:
 ; "A Microcomputer Solution to Maneuvering Board Problems" by Kenneth Harper Kerns, June 1973
-; Naval Postgraduate School Monterey, California. 
+; Naval Postgraduate School Monterey, California.
 ;--------------------------------------------------------------------------------
 divdemo:    jms divinstr
 divdemo1:   fim P2,00H              ; P2 points the memory register where the dividend is stored (00H-0FH)
@@ -642,7 +647,7 @@ divdemo1:   fim P2,00H              ; P2 points the memory register where the di
             ldm 16-7                ; maximum of 7 digits for the dividend
             xch R13                 ; R13 is the digit counter for the getnumber function
             jms getnumber           ; get the dividend
-            
+
             jms newline
             jms secondnum           ; prompt for the divisor
             fim P2,20H              ; destination address for the divisor (20H-27H)
@@ -657,15 +662,15 @@ divdemo1:   fim P2,00H              ; P2 points the memory register where the di
             jms DVRT                ; multi-digit division routine
             ;jms newline
             ;fim P3,10H             ; P3 points the remainder
-            ;jms prndigits           
-            jms newline            
+            ;jms prndigits
+            jms newline
             jms quotient            ; print "Quotient:"
             fim P3,30H              ; P3 points to the quotient
             jms prnquot             ; print the 16 digits of the quotient
             jun divdemo1            ; go back for more of numbers
 
             org 0300H
-            
+
 ;-----------------------------------------------------------------------------------------
 ; Serial port demo. Echo characters received at the serial input back to the serial output.
 ;-----------------------------------------------------------------------------------------
@@ -768,7 +773,7 @@ leddelay2:  jcn t,$+3               ; skip the following instruction if TEST = 0
             bbl 1                   ; the start bit has been detected, return with accumulator = 1
             fim P7,07DH
 leddelay3:  isz R14,leddelay3       ; inner loop 1 millisecond delay
-            isz R15,leddelay3       ; 
+            isz R15,leddelay3       ;
             isz R12,leddelay2       ; inner loop executed 10 times (10 milliseconds)
             isz R13,leddelay1       ; outer loop executed 10 times (100 milliseconds)
             bbl 0
@@ -776,18 +781,18 @@ leddelay3:  isz R14,leddelay3       ; inner loop 1 millisecond delay
 ;-----------------------------------------------------------------------------------------
 ; Display the position of the 16 position rotary switch using the serial port and LEDs.
 ; R10 holds the current switch reading. R11 holds the previous switch reading.
-;-----------------------------------------------------------------------------------------             
+;-----------------------------------------------------------------------------------------
 switchdemo: ldm 0
             fim P2, LEDPORT
-            src P2 
+            src P2
             wmp                     ; turn off all four LEDs
             xch R11                 ; initialize R11 to zero
-            
+
             ldm 0001B
             fim P0,SERIALPORT
             src P0
-            wmp                     ; set serial port output high (MARK)            
-            
+            wmp                     ; set serial port output high (MARK)
+
 readsw:     jms newline             ; position the cursor to the beginning of the next line
             fim P3,GPIO
             src P3                  ; address of the 4265 GPIO
@@ -796,14 +801,14 @@ readsw1:    rd0                     ; read port W of the 4265 GPIO
             jms tenmsec             ; ten millisecond delay for switch de-bouncing
             jcn zn,exitswdemo       ; exit if start bit is detected
             jms tenmsec             ; ten millisecond delay for switch de-bouncing
-            jcn zn,exitswdemo       ; exit if start bit is detected            
+            jcn zn,exitswdemo       ; exit if start bit is detected
             jms tenmsec             ; ten millisecond delay for switch de-bouncing
-            jcn zn,exitswdemo       ; exit if start bit is detected            
+            jcn zn,exitswdemo       ; exit if start bit is detected
             rd0                     ; re-read the switches
             clc
             sub R10                 ; R10 contains the switch reading from 30 milliseconds ago
             jcn nz,readsw1          ; go back if two readings 30 milliseconds apart don't match (contacts are still bouncing)
-            
+
             ld R11                  ; recall the previous switch reading
             clc
             sub R10                 ; compare to the current reading by subtraction
@@ -816,27 +821,27 @@ readsw1:    rd0                     ; read port W of the 4265 GPIO
             fim P2, LEDPORT
             src P2
             wmp                     ; turn on LEDs to indicate switch position
-            
+
             fim P0,lo(positions)    ; lo byte of the address "positions"
             clc
             add R1
             jcn cn,nocarry          ; jump if no carry (overflow) from the addition of R1 to the accumulator
-            inc R0                  
+            inc R0
 nocarry:    xch R1
             fin P1                  ; get the character indexed by the switch setting into P1
             jms printchar           ; print the character in P1
             jun readsw              ; go back and do it again if TEST input is 0 (the start bit has not been received)
-            
-exitswdemo  jun reset2            
+
+exitswdemo  jun reset2
 
 positions:  data    "0123456789ABCDEF"
 
             org 0400H
-            
+
 ;-------------------------------------------------------------------------------
 ; Multi-digit multiplication function taken from:
 ; "A Microcomputer Solution to Maneuvering Board Problems" by Kenneth Harper Kerns, June 1973
-; Naval Postgraduate School Monterey, California. 
+; Naval Postgraduate School Monterey, California.
 ;
 ; P1 points to the multiplicand, P2 points to the multiplier, P3 points to the product.
 ; Sorry about the lack of comments. That's how it was done back in the day of teletypes.
@@ -952,7 +957,7 @@ STMAD       src P1
             bbl 0
 SKIPML      isz R7,STMAD
             bbl 0
-            
+
 CPLRT       clc
 COMPL       src P0
             ldm 6
@@ -975,14 +980,14 @@ TENS        ldm 0
             ral
             wr0
             bbl 0
-            
+
 ;-------------------------------------------------------------------------------
 ; Print the 16 digit quotient in RAM register pointed to by P3. The least significant
 ; digit is at location 0FH, therefore it's the first digit printed. The least significant
-; digit is at location 00H, so it's the last digit printed. Prints the first 7 digits 
-; (the whole number part), then the decimal point, then the remaining 9 digits 
-; (the fractional part). Suppresses leading and trailing zeros. R11 serves as a 
-; leading zero flag (1 means skip leading zeros). 
+; digit is at location 00H, so it's the last digit printed. Prints the first 7 digits
+; (the whole number part), then the decimal point, then the remaining 9 digits
+; (the fractional part). Suppresses leading and trailing zeros. R11 serves as a
+; leading zero flag (1 means skip leading zeros).
 ; Adapted from code in the "MCS-4 Micro Computer Set Users Manual, Feb. 73".
 ;-------------------------------------------------------------------------------
 prnquot:    ldm 0
@@ -996,7 +1001,7 @@ prnquot1:   src P3                  ; P3 points to the digit to be printed
             ldm 9                   ; units digit (the one immediately to the left of the decimal point) is at address 9
             clc
             sub R7                  ; compare by subtraction
-            jcn zn,prnquot2         ; jump if this is not the units digit 
+            jcn zn,prnquot2         ; jump if this is not the units digit
             ldm 0
             xch R11                 ; since this is the units digit, clear the leading zero flag
 prnquot2:   ld R11                  ; get the leading zero flag
@@ -1004,7 +1009,7 @@ prnquot2:   ld R11                  ; get the leading zero flag
             rdm                     ; read the digit to be printed
             jcn zn,prnquot3         ; jump if this digit to be printed is not zero
             jcn c,prnquot4          ; this digit is zero, jump if the leading zero flag is set
-            
+
 prnquot3:   xch R3                  ; this digit is not zero OR the leading zero flag is not set. put the digit as least significant nibble into R3
             ldm 3
             xch R2                  ; most significant nibble ("3" for ASCII characters 30H-39H)
@@ -1015,8 +1020,8 @@ prnquot3:   xch R3                  ; this digit is not zero OR the leading zero
 
 prnquot4:   ld  R7                  ; least significant nibble of the pointer to the digit
             dac                     ; next digit
-            xch R7                  ; back into R7, P3 now points to the next digit of the quotient to be printed 
-            
+            xch R7                  ; back into R7, P3 now points to the next digit of the quotient to be printed
+
             ldm 8                   ; the fractional part of the quotient begins at address 8
             clc
             sub R7                  ; compare by subtraction. acc is zero if R7 equals 8. the carry flag is set if R7 less than or equal 8
@@ -1026,14 +1031,14 @@ prnquot4:   ld  R7                  ; least significant nibble of the pointer to
             fim P1,'.'              ; else use a decimal point before the tenths digit to separate the whole number and fractional parts
             jms printchar           ; print the decimal point
             jun prnquot6            ; go increment counter
-            
+
 prnquot5:   jcn cn,prnquot6         ; jump if the next digit to be printed is not part of the fractional part
             jms zeros               ; we're printing the fractional part. is the rest of fractional part all zeros?
             jcn z,prnquot7          ; if the rest of the fractional part is all zeros, skip to the end
-            
+
 prnquot6:   isz R10,prnquot1        ; loop 16 times to print all 16 digits
 prnquot7:   bbl 0                   ; finished with all 16 digits, return to caller
-            
+
 ;-------------------------------------------------------------------------------
 ; Returns with zero if what remains of the fractional part of the quotient part
 ; is all zeros and thus does not need to be printed, otherwise returns with 1.
@@ -1042,7 +1047,7 @@ zeros:      ld R6
             xch R2
             ld R7
             xch R3                  ; P1 now points next digit of the fractional part not yet printed
-            
+
 zeros1:     src P1
             rdm                     ; read the digit of the fractional part
             jcn zn,zeros2           ; exit if not zero
@@ -1057,15 +1062,15 @@ zeros1:     src P1
 zeros2:     bbl 1                   ;return with non-zero
 
             org 0500H
-            
+
 ;-------------------------------------------------------------------------------
 ; Multi-digit division routine taken from:
 ; "A Microcomputer Solution to Maneuvering Board Problems" by Kenneth Harper Kerns, June 1973
-; Naval Postgraduate School Monterey, California. 
+; Naval Postgraduate School Monterey, California.
 ;
-; P1 points to the dividend, P2 points to the remainder, 
+; P1 points to the dividend, P2 points to the remainder,
 ; P3 points to the divisor, P4 points to the quotient
-;-------------------------------------------------------------------------------            
+;-------------------------------------------------------------------------------
 ; DIVIDE ROUTINE, SETS UP TO USE DECDIV
 DVRT        src P1
             rd0
@@ -1131,15 +1136,15 @@ DV2         src P4
             jms CPLRT
 ATLAST      bbl 0
 
-;--------------------------------------------------------------------------------------------------            
+;--------------------------------------------------------------------------------------------------
 ; Multi-digit subtraction function: P2 points to subtrahend. P1 points to the minuend. The subtrahend is
-; subtracted from the minuend. The difference goes into RAM register pointed to by P1. The minuend is 
+; subtracted from the minuend. The difference goes into RAM register pointed to by P1. The minuend is
 ; stored in RAM at 00H-0FH (least significant digit at 00H, most significant digit at 0FH). The subtrahend
 ; is stored in RAM at 00H-0FH (least significant digit at 00H, most significant digit at 0FH). The difference
-; replaces the minuend (least significant digit at 00H, most significant digit at 0FH). Returns 0 if the 
-; difference is positive. Returns 1 if the difference is negative. 
+; replaces the minuend (least significant digit at 00H, most significant digit at 0FH). Returns 0 if the
+; difference is positive. Returns 1 if the difference is negative.
 ; Adapted from code in "MCS-4 Assembly Language Programming Manual, Feb. 73" page 4-23.
-;--------------------------------------------------------------------------------------------------            
+;--------------------------------------------------------------------------------------------------
 subtract:   ldm 0
             xch R11                 ; R11 is the loop counter (0 gives 16 times thru the loop for 16 digits)
             stc                     ; set carry = 1
@@ -1154,12 +1159,12 @@ subtract1:  tcs                     ; accumulator = 9 or 10
             inc R3                  ; address next digit of minuend
             inc R5                  ; address next digit of subtrahend
             isz R11,subtract1       ; loop back for all 16 digits
-            jcn c,subtract2         ; carry set means no underflow from the 16th digit            
+            jcn c,subtract2         ; carry set means no underflow from the 16th digit
             bbl 1                   ; overflow, the difference is negative
 subtract2:  bbl 0                   ; no overflow, the difference is positive
 
             org 0600H
-            
+
 ; DECIMAL DIVISION ROUTINE
 ;  WRITTEN  BY
 ;  G. A. KILDALL
@@ -1347,7 +1352,7 @@ PSTFIL      bbl 0
 DOVRFL      bbl 1
 
             org 0700H
-            
+
 ;-----------------------------------------------------------------------------------------
 ; print the sign-on banner and menu options
 ;-----------------------------------------------------------------------------------------
@@ -1364,15 +1369,15 @@ menutxt:    data CR,LF,LF
             data "2 - LED demo 2",CR,LF
             data "3 - Addition demo",CR,LF
             data "4 - Subtraction demo",CR,LF
-            data "5 - Multiplication demo",CR,LF 
-            data "6 - Division demo",CR,LF 
+            data "5 - Multiplication demo",CR,LF
+            data "6 - Division demo",CR,LF
             data "7 - Serial comm demo",CR,LF
-            data "8 - Number guessing game",CR,LF            
+            data "8 - Number guessing game",CR,LF
             data "9 - Display switch positions",CR,LF,LF
             data "Your choice (1-9): ",0
 
             org 0800H
-            
+
 ;-----------------------------------------------------------------------------------------
 ; print the prompts for the serial comm, addition and subtraction demos
 ;-----------------------------------------------------------------------------------------
@@ -1393,9 +1398,9 @@ overflow:   fim P0,lo(overtxt)
 
 diff:       fim P0,lo(difftxt)
             jun printstr
-            
+
 product:    fim P0,lo(producttxt)
-            jun printstr   
+            jun printstr
 
 quotient:   fim P0,lo(quottxt)
             jun printstr
@@ -1436,9 +1441,9 @@ addtxt:     data CR,LF,LF
             data "Integer addition demo:",CR,LF,LF
             data "Enter two integers from 1 to 16 digits. If fewer than 16 digits,",CR,LF
             data "press 'Enter'. The second integer is added to the first.",0
-            
+
             org 0A00H
-            
+
 ;-----------------------------------------------------------------------------------------
 ; print the instructions for the subtraction demo and "built by" message
 ;-----------------------------------------------------------------------------------------
@@ -1452,16 +1457,16 @@ subtxt:     data CR,LF,LF
             data "Integer subtraction demo:",CR,LF,LF
             data "Enter two integers from 1 to 16 digits. If fewer than 16 digits,",CR,LF
             data "press 'Enter'. The second integer is subtracted from the first.",0
-            
+
 builtby:    fim P0,lo(builttxt)
             jun subprint
-            
+
 builttxt:   data CR,LF
             data "Intel 4004 SBC built by Jim Loos.",CR,LF
             data "Firmware assembled on ",DATE," at ",TIME,".",0
 
             org 0B00H
-            
+
 ;-----------------------------------------------------------------------------------------
 ; print the instructions for the multiplication demo
 ;-----------------------------------------------------------------------------------------
@@ -1477,7 +1482,7 @@ multitxt:   data CR,LF,LF
             data "press 'Enter'. The first integer is multiplied by the second.",0
 
             org 0C00H
-            
+
 ;-----------------------------------------------------------------------------------------
 ; print the instructions for the division demo
 ;-----------------------------------------------------------------------------------------
@@ -1493,7 +1498,7 @@ dividetxt:  data CR,LF,LF
             data "press 'Enter'. The first integer is divided by the second.",0
 
             org 0D00H
-            
+
 gameprint:  fin P1                  ; fetch the character pointed to by P0 into P1
             jms txtout              ; print the character, increment the pointer to the next character
             jcn zn,gameprint         ; go back for the next character
@@ -1501,39 +1506,39 @@ gameprint:  fin P1                  ; fetch the character pointed to by P0 into 
 
 intro:      fim P0,lo(introtxt)
             jun gameprint
-            
+
 prompt:     fim P0,lo(prompttxt)
-            jun gameprint       
-            
+            jun gameprint
+
 guess:      fim P0,lo(guesstxt)
-            jun gameprint            
+            jun gameprint
 
 success1:   fim P0,lo(successtxt1)
-            jun gameprint         
+            jun gameprint
 
 success2:   fim P0,lo(successtxt2)
-            jun gameprint         
+            jun gameprint
 
 toolow:     fim P0,lo(toolowtxt)
-            jun gameprint            
+            jun gameprint
 
 toohigh:    fim P0,lo(toohightxt)
-            jun gameprint            
-            
+            jun gameprint
+
 again:      fim P0,lo(againtxt)
-            jun gameprint             
+            jun gameprint
 
 introtxt:   data CR,LF,LF,"Try to guess the hex number (00-FF) that I'm thinking of.",0
-prompttxt   data CR,LF,"Press any key to continue...",0    
-guesstxt    data CR,LF,"Your guess? (00-FF) ",0   
+prompttxt   data CR,LF,"Press any key to continue...",0
+guesstxt    data CR,LF,"Your guess? (00-FF) ",0
 successtxt1 data CR,LF,"That's it! You guessed it in ",0
 successtxt2 data " tries.",CR,LF,0
 toolowtxt   data CR,LF,"Too low.",CR,LF,0
-toohightxt  data CR,LF,"Too high.",CR,LF,0 
-againtxt    data CR,LF,"Play again? (Y/N)",0   
+toohightxt  data CR,LF,"Too high.",CR,LF,0
+againtxt    data CR,LF,"Play again? (Y/N)",0
 
             org 0E00H
-            
+
 ;--------------------------------------------------------------------------------------------------
 ; Simple number guessing game. The player tries to guess a pseudo random hexadecimal number from
 ; 00H to FFH stored in P4. The player's guess is stored in P5. The number of the player's guesses is stored in P2.
@@ -1544,23 +1549,23 @@ game1:      jcn tn,game2            ; jump if TEST=1 (the start bit has been det
             isz R9,game1            ; start with whatever is in P4. increment P4 every 4 cycles (every 44 microseconds)
             isz R8,game1
             jun game1               ; go back until the start bit is detected
-            
+
 game2:      ;ld R8
             ;xch R0
             ;ld R9
             ;xch R1                  ; the pseudo random in P4 (R8,R9) was copied to P0 (R0,R1) for printing
             ;jms print2hex           ; for debugging, print the pseudo random number
-            
+
             ldm 0
             xch R4
             ldm 0
             xch R5                  ; clear the number of attempts stored in P2 (R4,R5)
-            
+
 game3:      inc R5                  ; increment least significant digit of the number of attempts
             ld R5
             jcn zn,game4            ; skip the next instruction if the increment of R5 did not roll over to zero
             inc R4                  ; increment most significant digit of the number of attempts
-            
+
 game4:      jms guess               ; prompt "Your guess: "
             jms getchar             ; get the first hex digit of the player's guess into P1
             fim P3,03H              ; was it control C?
@@ -1570,7 +1575,7 @@ game4:      jms guess               ; prompt "Your guess: "
             jcn zn,game4            ; non-zero means it was an invalid hex digit, go try again
 game5:      ld R2                   ; the binary number from the conversion is returned in R2
             xch R10                 ; save the first digit as the high nibble of P5
-           
+
             jms getchar             ; get the second hex digit of the player's guess into P1
             fim P3,03H              ; was it control C?
             jms compare
@@ -1583,7 +1588,7 @@ game5:      ld R2                   ; the binary number from the conversion is r
             ldm 0
             xch R10                 ; zero the high nibble of P5
             jun game8               ; go to the comparison
-            
+
 game6:      jms ascii2hex           ; convert the second digit to hex
             jcn zn,game4            ; non-zero means it was an invalid hex digit, go try again
 game7:      ld R2                   ; the binary number from the conversion routine is returned in R2
@@ -1592,7 +1597,7 @@ game8:      ld R10                  ; get the high nibble of P5
             xch R2                  ; save it as the high nibble of P1
             ld R11                  ; get the low nibble of P5
             xch R3                  ; make it the low nibble of P1. the player's guess is now copied from P5 (R10,R11) to P1 (R2,R3)
-            
+
             ld R8                   ; get the high nibble of P4
             xch R6                  ; save it as the high nibble of P3
             ld R9                   ; get the low nibble of P4
@@ -1608,7 +1613,7 @@ game8:      ld R10                  ; get the high nibble of P5
             jun game11              ; if it's neither equal nor too low, then the player's guess must be too high
 
 ; the player's guess was correct
-game9:      jms success1            ; print "That's it! You guessed it in" 
+game9:      jms success1            ; print "That's it! You guessed it in"
             ld R4                   ; get the high nibble of the number of attempts
             xch R0                  ; copy the high nibble of number of attempts from P2 to P0
             ld R5                   ; get the low nibble of the number of attempts
@@ -1624,13 +1629,13 @@ game9:      jms success1            ; print "That's it! You guessed it in"
             jms compare
             jcn z,game0             ; go back for another game
 game9a:     jun reset2
-            
-; the player's guess was too low            
-game10:     jms toolow              ; print "Too low."   
+
+; the player's guess was too low
+game10:     jms toolow              ; print "Too low."
             jun game3               ; go back for another attempt
 
-; the player's guess was too high            
-game11:     jms toohigh             ; print "Too high."       
+; the player's guess was too high
+game11:     jms toohigh             ; print "Too high."
             jun game3               ; go back for another attempt
 
 ;--------------------------------------------------------------------------------------------------
@@ -1639,7 +1644,7 @@ game11:     jms toohigh             ; print "Too high."
 ;--------------------------------------------------------------------------------------------------
 ascii2hex:  ldm 3
             clc
-            sub R2                  ; compare R2 to 3 by subtraction        
+            sub R2                  ; compare R2 to 3 by subtraction
             jcn z,ascii2hex1        ; jump if most significant nibble of digit is 3 (30H-39H or 0-9)
             ldm 4
             clc
@@ -1652,17 +1657,17 @@ ascii2hex:  ldm 3
             bbl 1                   ; otherwise its not a hex digit
 
 ; jump here if the most significant nibble of the character is "3"
-ascii2hex1: ld R3                   ; get the least sifnificant nibble                
-            xch R2                  
+ascii2hex1: ld R3                   ; get the least sifnificant nibble
+            xch R2
             ldm 9
             clc
             sub R2                  ; compare the least significant nibble to 9 by subtraction
             jcn c,ascii2hex2        ; carry indicates the lease significant nibble in R2 is less than or equal to 9
             bbl 1                   ; otherwise, return 1 to indicate invalid character
 ascii2hex2: bbl 0                   ; return with the binary value of the hex character in R2
-            
-; jump here if the most significant nibble of the character is "4" or "6"            
-ascii2hex3: ldm 6                   
+
+; jump here if the most significant nibble of the character is "4" or "6"
+ascii2hex3: ldm 6
             clc
             sub R3
             jcn c,ascii2hex4        ; carry indicates R3 is less than or equal to 6
@@ -1671,13 +1676,13 @@ ascii2hex4: ldm 0
             clc
             sub R3
             jcn cn,ascii2hex5       ; no carry indicates greater than 0
-            bbl 1                   
+            bbl 1
 ascii2hex5: ldm 9                   ; valid digit A-F or a-f
             clc
             add R3                  ; add 9 to the least significant nibble
             xch R2                  ; save it in R2
             bbl 0
-            
+
 ;-----------------------------------------------------------------------------------------
 ; prints the contents of P0 as two hex digits
 ;-----------------------------------------------------------------------------------------
@@ -1688,13 +1693,13 @@ print2hex:  ld R0                   ; most significant nibble
 ;-----------------------------------------------------------------------------------------
 ; print the accumulator as one hex digit, destroys contents of the accumulator
 ;-----------------------------------------------------------------------------------------
-print1hex:  fim P1,030H             ; R2 = 3, R3 = 0; 
+print1hex:  fim P1,030H             ; R2 = 3, R3 = 0;
             clc
             daa                     ; for values A-F, adds 6 and sets carry
             jcn cn,print1hex1       ; no carry means 0-9
             inc R2                  ; R2 = 4 for ascii 41h (A), 42h (B), 43h (C), etc
             iac                     ; we need one extra for the least significant nibble
 print1hex1: xch R3                  ; put that value in R3, fall through to the printchar subroutine below
-            jun printchar            
+            jun printchar
 
-            
+
