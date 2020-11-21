@@ -433,7 +433,7 @@ getnumber4: src P3                  ; source address
             bbl 0
 
 ;-------------------------------------------------------------------------------
-; Print the contents of RAM register pointed to by P3 and a 16 digit number. R11
+; Print the contents of RAM register pointed to by P3 as a 16 digit number. R11
 ; serves as a leading zero flag (1 means skip leading zeros). The digits are stored
 ; in RAM from right to left i.e. the most significant digit is at location 0FH,
 ; therefore it's the first digit printed. The least significant digit is at location
