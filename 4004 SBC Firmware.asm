@@ -1,6 +1,6 @@
     PAGE 0                          ; suppress page headings in ASW listing file
 ;---------------------------------------------------------------------------------------------------------------------------------
-; Copyright © 2020 Jim Loos
+; Copyright 2020 Jim Loos
 ; 
 ; Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
 ; (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
@@ -13,12 +13,12 @@
 ; OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 ; LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
 ; IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-;---------------------------------------------------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------------------------------------    
 
 ;--------------------------------------------------------------------------------------------------
 ; Firmware for the Intel 4004 Single Board Computer.
 ; Requires the use of a terminal emulator connected to the SBC
-; set for 300 bps, no parity, 7 data bits, 1 stop bit.
+; set for 300 bps, no parity, 8 data bits, 1 stop bit.
 ; 110 bps would be more period-correct but takes forever!
 ; Syntax is for the Macro Assembler AS V1.42 http://john.ccac.rwth-aachen.de:8000/as/
 ;----------------------------------------------------------------------------------------------------
@@ -70,7 +70,8 @@ GPIOMODE7   equ 0111B   ;       I   I   I   O
 ;--------------------------------------------------------------------------------------------------
 ; Power-on-reset Entry
 ;--------------------------------------------------------------------------------------------------
-reset:      nop
+reset:      nop                     ; To avoid problems with power-on reset, the first instruction at
+                                    ; program address 000 should always be an NOP. 
             jms ledsoff             ; turn off all four leds
 
             ldm 0001B
@@ -274,16 +275,10 @@ printchar:  fim P7,SERIALPORT
             src P7                  ; address of serial port for I/O writes
             ldm 0
             wmp                     ; write the least significant bit of the accumulator to the serial output port
-            fim P7,0B7H             ; 286 cycles
+            fim P7,087H             ; 292 cycles
 printchar1: isz R14,printchar1
             isz R15,printchar1
-            nop
-            ld R2                   ; get the most significant nibble of the character from R2
-            ral
-            stc
-            rar                     ; set the most significant bit of the character (the stop bit)
-            xch R2                  ; save the most significant nibble of the character in R2
-            ldm 8                   ; 8 bits (7 data bits and 1 stop bit) to send
+            ldm 8                   ; 8 bits to send
             xch R12                 ; R12 is used as the bit counter
 
 printchar2: ld R2                   ; get the most significant nibble of the character from R2
@@ -298,6 +293,12 @@ printchar2: ld R2                   ; get the most significant nibble of the cha
 printchar3: isz R14,printchar3
             isz R15,printchar3
             isz R12,printchar2      ; do it for all 8 bits in R2,R3
+            
+            ldm 1
+            wmp                     ; stop bit
+            fim P7,087H             ; 292 cycles
+printchar4: isz R14,printchar4
+            isz R15,printchar4
             bbl 0
 
 ;-----------------------------------------------------------------------------------------
@@ -313,7 +314,7 @@ printchar3: isz R14,printchar3
 ; for 300 bps: 1000000 microseconds / 300 bits/second / 11.05 microseconds/cycle = 302 cycles/bit
 ;-----------------------------------------------------------------------------------------
 getchar:    ldm 8
-            xch R12                 ; R12 holds the number of bits to receive (7 data bits and 1 stop bit);
+            xch R12                 ; R12 holds the number of bits to receive
             fim P7,LEDPORT
             src P7
             ldm 0
@@ -347,7 +348,7 @@ getchar6:   isz R2,getchar6
             isz R3,getchar6
             nop                     ; added to tweak timing
 
-; loop here until all seven bits plus stop bit have been received (302 cycles/bit)
+; loop here until all 8 bits bits have been received (302 cycles/bit)
 getchar7:   fim P7,0DBH             ; 146 cycles delay (1/2 bit time)
 getchar8:   isz R14,getchar8
             isz R15,getchar8
@@ -372,12 +373,15 @@ getchar9:   isz R14,getchar9
             nop
             isz R12,getchar7        ; loop back until all 8 bits are read
 
-; 7 data bits and 1 stop bit have been received, clear the the most significant bit of the most significant nibble (the stop bit)
-            ld R2                   ; get the most significant nibble from R2
-            ral
-            clc
-            rar                     ; shift the cleared carry bit back into the most significant bit of the most significant nibble
-            xch R2                  ; save it back into R2
+; 8 data bits have been received, time to send the stop bit
+            fim P7,0BBH             ; 150 cycles delay (1/2 bit time)
+getchar10:  isz R14,getchar10
+            isz R15,getchar10
+            ldm 1
+            wmp                     ; send the stop bit
+            fim P7,0B7H             ; 286 cycles
+getchar11:  isz R14,getchar11
+            isz R15,getchar11
             bbl 0                   ; return to caller
 
 ;-------------------------------------------------------------------------------
