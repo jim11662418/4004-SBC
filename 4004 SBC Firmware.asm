@@ -1482,7 +1482,7 @@ builtby:    fim P0,lo(builttxt)
 
 builttxt:   data CR,LF
             data "Intel 4004 SBC built by Jim Loos.",CR,LF
-            data "Firmware assembled on ",DATE," at ",TIME,".",0
+            data "Firmware assembled on ",DATE,".",0
 
             org 0B00H
 
