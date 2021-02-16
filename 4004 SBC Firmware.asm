@@ -24,7 +24,7 @@
 ;----------------------------------------------------------------------------------------------------
 
 ; Tell the ASW assembler that this source is for the Intel 4004.
-            cpu 4004
+            cpu 4040
 
 ; Conditional jumps syntax for ASW:
 ; jcn t     jump if test = 0 - positive voltage or +5VDC
@@ -91,7 +91,7 @@ reset1:     isz R12,reset1
             ldm GPIOMODE0           ; from the table above
             wmp                     ; program the 4265 for mode 0 (all four ports are inputs)
 
-            jms banner              ; print "Intel 4004 SBC"
+            jms banner              ; print "Intel 4004 SBC" or "Intel 4040 SBC"
 reset2:     jms ledsoff             ; all LEDs off
             jms menu                ; print the menu
 reset3:     jms getchar             ; wait for a character from serial input, echo it, the character is returned in P1
@@ -189,8 +189,23 @@ state2:     ldm 0                   ; state=2, the 2nd Escape has been received,
             jcn nz,reset2           ; not "?", display the menu options, go back for the next character
 
             jms newline             ; ESCAPE,ESCAPE,? has been detected
+            jms banner
             jms builtby             ; display the "built by" message
             jun reset2              ; display the menu options, go back for the next character
+            
+;--------------------------------------------------------------------------------------------------
+; detects 4004 or 4040 CPU by using the "AN7" instruction available only on the 4040
+; returns with accumulator = 0 for 4004 CPU
+; returns with accumulator = 1 for 4040 CPU
+;--------------------------------------------------------------------------------------------------
+detectCPU:  ldm 0
+            xch R7                  ; R7 now contains 0000
+            ldm 1111b               ; accumulator now contains 1111                 
+            an7                     ; logical AND the contents of the accumulator with R7 (4040 CPU only)
+            rar                     ; rotate the least significant bit of the accumulator into carry
+            jcn c,detectCPU1        ; if carry is set, logical AND failed, must be a 4004
+            bbl 1                   ; indicates 4040
+detectCPU1: bbl 0                   ; indicates 4004             
 
 ;--------------------------------------------------------------------------------------------------
 ; turn off all four LEDs
@@ -308,7 +323,7 @@ printchar4: isz R14,printchar4
 ; therefore the sense of the bit needs to be inverted in software.
 ; Echo the received character to the serial output port (bit 0 of port 0).
 ; Flash the LED on bit 0 of the 2nd 4002 about 3 times per second while waiting for
-; a character. Returns the 7 bit received character in P1 (R2,R3).
+; a character. Returns the 8 bit received character in P1 (R2,R3).
 ; In addition to P1, also uses P6 (R12,R13) and P7 (R14,R15).
 ; (1/(5068000 MHz/7))*8 clocks/cycle = 11.05 microseconds/cycle
 ; for 300 bps: 1000000 microseconds / 300 bits/second / 11.05 microseconds/cycle = 302 cycles/bit
@@ -1373,7 +1388,7 @@ DOVRFL      bbl 1
             org 0700H
 
 ;-----------------------------------------------------------------------------------------
-; print the sign-on banner and menu options
+; print the menu options
 ;-----------------------------------------------------------------------------------------
 menu:       fim P0,lo(menutxt)
             jun menuprint
@@ -1398,7 +1413,7 @@ menutxt:    data CR,LF,LF
             org 0800H
 
 ;-----------------------------------------------------------------------------------------
-; print the prompts for the serial comm, addition and subtraction demos
+; print the initial banner and prompts for the serial comm, addition and subtraction demos
 ;-----------------------------------------------------------------------------------------
 serinstr:   fim P0,lo(sertxt)
             jun printstr
@@ -1439,11 +1454,17 @@ quottxt:    data "Quotient:       ",0
 overtxt     data "Overflow!",0
 sertxt:     data CR,LF,"Type some text. ^C to end.",CR,LF,0
 
-banner:     fim P0,lo(bannertxt)
+banner:     jms detectCPU
+            jcn zn,banner1
+            fim P0,lo(banner1txt)
+            jun printstr
+banner1:    fim P0,lo(banner2txt)
             jun printstr
 
-bannertxt:  data CR,LF,LF
+banner1txt: data CR,LF,LF
             data "Intel 4004 SBC",0
+banner2txt: data CR,LF,LF
+            data "Intel 4040 SBC",0
 
             org 0900H
 
@@ -1480,9 +1501,8 @@ subtxt:     data CR,LF,LF
 builtby:    fim P0,lo(builttxt)
             jun subprint
 
-builttxt:   data CR,LF
-            data "Intel 4004 SBC built by Jim Loos.",CR,LF
-            data "Firmware assembled on ",DATE,".",0
+builttxt:   data " built by Jim Loos.",CR,LF
+            data "Firmware assembled on ",DATE," at ",TIME,".",0
 
             org 0B00H
 
