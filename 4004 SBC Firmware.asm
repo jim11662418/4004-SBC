@@ -328,7 +328,7 @@ printchar4: isz R14,printchar4
 ; (1/(5068000 MHz/7))*8 clocks/cycle = 11.05 microseconds/cycle
 ; for 300 bps: 1000000 microseconds / 300 bits/second / 11.05 microseconds/cycle = 302 cycles/bit
 ;-----------------------------------------------------------------------------------------
-getchar:    ldm 8
+getchar:    ldm 8           
             xch R12                 ; R12 holds the number of bits to receive
             fim P7,LEDPORT
             src P7
