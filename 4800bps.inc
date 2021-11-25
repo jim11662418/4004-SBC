@@ -62,7 +62,7 @@ getchar4:   ldm 16-8
             isz R15,$               ; 6 cycle delay
             nop                     ; 1 cycle delay
             
-; loop here until all seven bits plus stop bit have been received (75 cycles/bit)...
+; loop here until all seven bits plus stop bit have been received...
 getchar7:   nop                     ; timing adjustment
             nop
             nop

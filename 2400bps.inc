@@ -62,7 +62,7 @@ getchar4:   ldm 16-8
             fim P7,12
             isz R15,$
             
-; loop here until all seven bits plus stop bit have been received (75 cycles/bit)...
+; loop here until all seven bits plus stop bit have been received...
 getchar7:   fim P7,7                ; delay 1 bit time
             isz R15,$
             nop

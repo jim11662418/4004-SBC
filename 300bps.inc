@@ -66,7 +66,7 @@ getchar6:   isz R2,getchar6
             isz R3,getchar6
             nop                     ; added to tweak timing
 
-; loop here until all 9 bits bits have been received (302 cycles/bit)
+; loop here until all 9 bits bits have been received...
 getchar7:   fim P7,0DBH             ; 146 cycles delay (1/2 bit time)
 getchar8:   isz R14,getchar8
             isz R15,getchar8

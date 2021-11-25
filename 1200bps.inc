@@ -69,7 +69,7 @@ getchar6:   isz R2,getchar6
             nop
             nop
             
-; loop here until all seven bits plus stop bit have been received (75 cycles/bit)...
+; loop here until all seven bits plus stop bit have been received...
 getchar7:   fim P7,03FH             ; 30 cycles delay
 getchar8:   isz R14,getchar8
             isz R15,getchar8     
