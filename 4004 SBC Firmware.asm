@@ -594,7 +594,7 @@ multdemo1:  fim P2,multiplicand     ; P2 points the memory register where the mu
             jms newline             ; position carriage to beginning of next line
             jms newline
             jms firstnum            ; prompt for the multiplicand
-            fim P2,multiplicand     ; destination address for multiplicand (15H)
+            fim P2,multiplicand+5   ; destination address for multiplicand (15H)
             ldm 16-8                ; up to 8 digits
             xch R13                 ; R13 is the digit counter
             jms getnumber           ; get the multiplicand (8 digits max) into RAM at 15H-1CH
