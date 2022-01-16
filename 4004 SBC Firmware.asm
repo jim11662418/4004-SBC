@@ -1696,7 +1696,7 @@ printBoard2:    jms putchar             ; print the character
                 isz R7,printBoard0      ; loop back for all three rows
                 bbl 0
 
-; player selects a square in the grid for his move.
+; player selects a square in the grid for their move.
 ; increments status character 0 of register 'grid' while waiting for the start bit
 ; producing a pseudo-random number for the computer's 'randomMove' function.
 ; returns 1 if legal empty square selected. P7 points to the legal empty square selected.
@@ -1749,7 +1749,7 @@ makeCompMove:   ldm 16-1
                 wrm                     ; store -1
                 bbl 0
 
-; computer randomly selects a square in the grid for it's move.
+; computer randomly selects a square in the grid for its move.
 ; returns 1 if a random empty square found.
 ; else, returns 0 if there are no empty squares to move to (game tied).
 ; P7 points to the random empty square selected.
