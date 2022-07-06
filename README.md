@@ -18,7 +18,7 @@ The CPU and Memory section of the Single Board Computer consists of an Intel 400
 <p align="center"><img src="/images/4004%20SBC%20CPU.png"/>
 <p align="center">4004 SBC CPU and Memory Schematic</p><br>
 
-The empty 24 pin socket shown in the in photo above optionally allows the use of a 4040 CPU in place of the 4004 CPU. The 4004 CPU must be removed from its socket if the 4040 CPU is installed and vice-versa.
+The empty 24 pin socket shown in the photo above optionally allows the use of a 4040 CPU in place of the 4004 CPU. The 4004 CPU must be removed from its socket if the 4040 CPU is installed and vice-versa.
 <p align="center"><img src="/images/4040%20SBC%20CPU.png"/>
 <p align="center">4040 SBC CPU and Memory Schematic</p><br>
 
